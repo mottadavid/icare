@@ -1,0 +1,37 @@
+version: '3.7'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./docker/app/Dockerfile
+    env_file:
+      - ./docker/app/variables.env
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    restart: on-failure
+    volumes:
+      - assets:/var/www/app/public
+  db:
+    image: mdillon/postgis:11-alpine
+    restart: on-failure
+    volumes:
+      - db-data:/var/lib/postgresql/data
+  nginx:
+    build:
+      context: .
+      dockerfile: ./docker/nginx/Dockerfile
+    links:
+      - app
+    ports:
+      - 3080:80
+      - 3443:443
+    restart: on-failure
+    volumes:
+      - assets:/var/www/app/public:ro
+
+volumes:
+  assets:
+  db-data:
